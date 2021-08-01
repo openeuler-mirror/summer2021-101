@@ -8,7 +8,7 @@ int main()
 {
     std::cout << "start dlopen" << std::endl;
 
-    void* libtest = dlopen("/home/miao/Documents/github/summer2021-101/plugins_def/test/libtest.so", RTLD_LAZY);
+    void* libtest = dlopen("/home/miao/Documents/github/summer2021-101/plugins_def/test/Hello_py.1.2.1.so", RTLD_LAZY);
     if (!libtest) {
         std::cerr << "cannot open lib " << dlerror() << std::endl;
         return -1;
@@ -29,6 +29,9 @@ int main()
     }
 
     BasePlugin* test = create_test();
+
+    // dlclose(libtest);
+
     std::cout << test->getinfo() << std::endl;
 
     int status = system("nautilus /home");

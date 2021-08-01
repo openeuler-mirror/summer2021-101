@@ -1,5 +1,5 @@
 TARGET_DIR 	= test
-TARGET  	= $(TARGET_DIR)/libtest.so
+TARGET  	= $(TARGET_DIR)/Hello_py.1.2.1.so
 
 CC			= g++ -std=c++11
 LIB			=

@@ -1,6 +1,9 @@
 {
-    "icon": "./Hello.png",
+    "icon": "icon.svg",
     "cmd": "/usr/bin/python3.8",
-    "argvs": ["Hello.py", "1234"],
+    "argvs": [
+        "Hello.py",
+        "1234"
+    ],
     "info": "Powered by MarmaladeCat"
 }
