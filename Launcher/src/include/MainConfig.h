@@ -1,41 +1,37 @@
 #ifndef MAINCONFIG_H
 #define MAINCONFIG_H
 
-#include <QJsonDocument>
+#include <QDebug>
+#include <QDir>
+#include <QFile>
 #include <QJsonArray>
+#include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonParseError>
 #include <QJsonValue>
-#include <QFile>
-#include <QDebug>
 #include <QVector>
 #include <unistd.h>
-#include <QDir>
 
-#include "errnos.h"
 #include "BasePlugin.hh"
 #include "Plugin.h"
+#include "errnos.h"
 
-
-
-class MainConfig
-{
+// 读取整个界面程序的配置。根据配置生成全部插件类
+class MainConfig {
 public:
     MainConfig(QString file);
     ~MainConfig();
 
-    QVector<Plugin *> &getPlugins();
+    QVector<Plugin*>& getPlugins();
+
 private:
-    QFile *fd;
+    QFile* fd;
     int status;
-    QVector<Plugin *> plugins;
+    QVector<Plugin*> plugins;
     QString version;
 
     void checkConf();
     void openPlugins();
-
-
-
 };
 
 #endif // MAINCONFIG_H

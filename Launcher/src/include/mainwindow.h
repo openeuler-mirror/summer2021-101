@@ -33,24 +33,28 @@ class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
 public slots:
-    void inHandler(const QString &text);
+    void inHandler(const QString& text);
     void selectHandler();
 
 private:
-    Ui::MainWindow *ui;
+    Ui::MainWindow* ui;
 
-    KBListener *kbListener;
+    // 监控键盘快捷键
+    KBListener* kbListener;
 
-    MainConfig *conf;
-    QVector<Plugin *> plugins;
-    QVBoxLayout *layout;
-    QWidget *contentWidget;
+    MainConfig* conf;
+    // 指向各个插件类
+    QVector<Plugin*> plugins;
 
+    QVBoxLayout* layout;
+    QWidget* contentWidget;
+    // 指向输入匹配到的插件
     QVector<int> matched;
-    QVector<QWidget *> contents;
+    // 生成所有候选插件面板
+    QVector<QWidget*> contents;
 
     int selected;
 
@@ -58,4 +62,4 @@ private:
     void setKBListener();
     //    void KBListener(qintptr fd);
 };
-#endif  // MAINWINDOW_H
+#endif // MAINWINDOW_H
