@@ -2,3 +2,7 @@
 *.so
 *.out
 .vscode/
+build-Launcher-Desktop_Qt_5_14_2_GCC_64bit-Debug/
+build-Launcher-Desktop_Qt_5_14_2_GCC_64bit-Release/
+Launcher.pro.user*
+plugins_2/
