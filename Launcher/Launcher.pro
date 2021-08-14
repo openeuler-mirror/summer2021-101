@@ -22,6 +22,8 @@ SOURCES += \
     src/KBListener.cpp \
     src/MainConfig.cpp \
     src/Plugin.cpp \
+    src/PluginManagePanel.cpp \
+    src/PluginManager.cpp \
     src/PluginPanel.cpp \
     src/main.cpp \
     src/mainwindow.cpp
@@ -31,11 +33,15 @@ HEADERS += \
     src/include/KBListener.h \
     src/include/MainConfig.h \
     src/include/Plugin.h \
+    src/include/PluginManagePanel.h \
+    src/include/PluginManager.h \
     src/include/PluginPanel.h \
     src/include/errnos.h \
     src/include/mainwindow.h
 
 FORMS += \
+    src/PluginManagePanel.ui \
+    src/PluginManager.ui \
     src/PluginPanel.ui \
     src/mainwindow.ui
 

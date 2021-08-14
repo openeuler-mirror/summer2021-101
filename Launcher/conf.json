@@ -1,10 +1,12 @@
 {
-    "Version": "1.1.2",
-    "Plugins": [{
-        "name": "Hello_py",
-        "version": "1.2.1",
-        "keyword": "hel",
-        "cmd": true,
-        "status": true
-    }]
+    "Plugins": [
+        {
+            "cmd": true,
+            "keyword": "hel",
+            "name": "Hello_py",
+            "status": true,
+            "version": "1.2.3"
+        }
+    ],
+    "Version": "1.3.2"
 }

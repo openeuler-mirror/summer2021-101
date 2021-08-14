@@ -16,8 +16,8 @@ signals:
     void click(int i);
 
 public:
-    explicit PluginPanel(QString basePath, QString icon, QString cmd, QStringList argvs, QString info, int index,
-                         QWidget *parent = nullptr);
+    explicit PluginPanel(QString basePath, QString name, QString icon, QString cmd, QStringList argvs, QString info,
+                         int index, QWidget *parent = nullptr);
     ~PluginPanel();
     void selected(bool flag);
 

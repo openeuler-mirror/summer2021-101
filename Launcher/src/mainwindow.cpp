@@ -7,9 +7,10 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     resetWindowSize();
     setKBListener();
+    this->pluginManager = NULL;
 
-    this->conf = new MainConfig("/home/miao/Documents/github/summer2021-101/Launcher/conf.json");
-    this->plugins = this->conf->getPlugins();
+    this->conf = new MainConfig("/home/miao/Documents/github/summer2021-101/Launcher/conf.json", plugins);
+    //    this->plugins = this->conf->getPlugins();
 
     this->contentWidget = new QWidget();
     this->layout = new QVBoxLayout();
@@ -20,6 +21,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     QObject::connect(ui->lineEdit, &QLineEdit::textChanged, this, &MainWindow::inHandler);
     QObject::connect(ui->lineEdit, &QLineEdit::returnPressed, this, &MainWindow::selectHandler);
+    QObject::connect(ui->pushButton, &QPushButton::clicked, this, &MainWindow::setManagerPage);
     this->selected = 0;
 }
 
@@ -37,15 +39,17 @@ void MainWindow::resetWindowSize() {
     qDebug() << "Window size:widht" << size.width() << "height" << size.height();
     ui->horizontalSpacer->changeSize(width, 0);
     ui->horizontalSpacer_2->changeSize(width, 0);
-    ui->verticalSpacer->changeSize(0, height);
+    //    ui->verticalSpacer->changeSize(0, height);
 }
 
 void MainWindow::setKBListener() {
     this->kbListener = new KBListener();
 
     QObject::connect(this->kbListener, &KBListener::KEY_Esc, this, [&]() {
-        //        this->hide();
-        this->close();
+        ui->lineEdit->clear();
+        this->hide();
+
+        //        this->close();
         this->kbListener->onScreen = false;
     });
     QObject::connect(this->kbListener, &KBListener::KEY_Show, this, [&]() {
@@ -54,18 +58,36 @@ void MainWindow::setKBListener() {
     });
 
     QObject::connect(this->kbListener, &KBListener::KEY_Up, this, [&]() {
-        this->selected = (this->selected - 1) % this->matched.count();
-        qDebug() << this->selected;
+        if (this->contents.isEmpty()) {
+            return;
+        }
+        ((PluginPanel*)(this->contents.at(this->selected)))->selected(false);
+        this->selected = (this->selected + this->map.count() - 1) % this->map.count();
+        ((PluginPanel*)(this->contents.at(this->selected)))->selected(true);
     });
 
     QObject::connect(this->kbListener, &KBListener::KEY_Down, this, [&]() {
-        this->selected = (this->selected + 1) % this->matched.count();
-        qDebug() << this->selected;
+        if (this->contents.isEmpty()) {
+            return;
+        }
+        ((PluginPanel*)(this->contents.at(this->selected)))->selected(false);
+        this->selected = (this->selected + this->map.count() + 1) % this->map.count();
+        ((PluginPanel*)(this->contents.at(this->selected)))->selected(true);
     });
+}
+
+void MainWindow::setManagerPage() {
+    ui->lineEdit->clear();
+    this->hide();
+    this->pluginManager = new PluginManager(this->plugins, this);
+    this->pluginManager->show();
+    QObject::connect(this->pluginManager, &PluginManager::changed, this->conf, &MainConfig::reWrite);
+    qDebug() << "[Info] PluginManager: open";
 }
 
 void MainWindow::inHandler(const QString& text) {
     qDebug() << text;
+    QStringList inList = text.split(" ");
     for (int i = 0; i < this->layout->count(); ++i) {
         this->layout->removeItem(this->layout->itemAt(0));
     }
@@ -78,8 +100,10 @@ void MainWindow::inHandler(const QString& text) {
 
     this->matched.clear();
 
+    this->map.clear();
+
     for (int i = 0; i < this->plugins.count(); ++i) {
-        if (text.compare(this->plugins.at(i)->_keyword) == 0) {
+        if (inList.at(i).compare(this->plugins.at(i)->_keyword) == 0) {
             this->matched.push_back(i);
         }
     }
@@ -96,21 +120,42 @@ void MainWindow::inHandler(const QString& text) {
             continue;
         } else {
             QJsonObject obj = dom.object();
-            if (obj.contains("icon") && obj.contains("cmd") && obj.contains("argvs") && obj.contains("info")) {
-                if (obj.value("icon").isString() && obj.value("cmd").isString() && obj.value("argvs").isArray() &&
-                    obj.value("info").isString()) {
-                    QStringList args;
-                    QJsonArray argvs = obj.value("argvs").toArray();
-                    for (int j = 0; j < argvs.count(); ++j) {
-                        args << argvs.at(j).toString();
-                    }
+            if (obj.contains("icon") && obj.contains("panels")) {
+                if (obj.value("icon").isString() && obj.value("panels").isArray()) {
+                    QString icon = obj.value("icon").toString();
+                    QJsonArray array = obj.value("panels").toArray();
+                    for (int j = 0; j < array.count(); ++j) {
+                        if (!array.at(j).isObject()) {
+                            continue;
+                        } else {
+                            QJsonObject objPanel = array.at(j).toObject();
+                            if (!objPanel.contains("cmd") || !objPanel.contains("argvs") ||
+                                !objPanel.contains("info")) {
+                                continue;
 
-                    PluginPanel* pp = new PluginPanel(QDir::currentPath() + "/plugins/" + this->plugins.at(i)->_name,
-                                                      obj.value("icon").toString(), obj.value("cmd").toString(), args,
-                                                      obj.value("info").toString(), this->matched.at(i));
-                    qDebug() << obj.value("icon").toString() << obj.value("cmd").toString() << args
-                             << obj.value("info").toString();
-                    this->contents.push_back(pp);
+                            } else {
+                                if (!objPanel.value("cmd").isString() || !objPanel.value("argvs").isArray() ||
+                                    !objPanel.value("info").isString()) {
+                                    continue;
+                                } else {
+                                    QStringList args;
+                                    QJsonArray argvs = objPanel.value("argvs").toArray();
+                                    for (int j = 0; j < argvs.count(); ++j) {
+                                        args << argvs.at(j).toString();
+                                    }
+
+                                    PluginPanel* pp = new PluginPanel(
+                                        QDir::currentPath() + "/plugins/" + this->plugins.at(i)->_name,
+                                        this->plugins.at(i)->_name, icon, objPanel.value("cmd").toString(), args,
+                                        objPanel.value("info").toString(), this->map.count());
+                                    this->map.push_back(i);
+                                    qDebug() << obj.value("icon").toString() << obj.value("cmd").toString() << args
+                                             << obj.value("info").toString();
+                                    this->contents.push_back(pp);
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -121,11 +166,21 @@ void MainWindow::inHandler(const QString& text) {
         this->layout->addWidget(this->contents.at(i));
     }
     this->selected = 0;
+    if (!this->contents.isEmpty()) {
+        ((PluginPanel*)(this->contents.at(this->selected)))->selected(true);
+    }
+    qDebug() << "map:" << this->map;
 }
 
 void MainWindow::selectHandler() {
-    PluginPanel* pp = (PluginPanel*)this->contents.at(this->matched.at(this->selected));
-    Plugin* pl = this->plugins.at(this->matched.at(this->selected));
+    if (this->contents.count() == 0) {
+        ui->lineEdit->clear();
+        this->hide();
+        return;
+    }
+
+    PluginPanel* pp = (PluginPanel*)this->contents.at(this->selected);
+    Plugin* pl = this->plugins.at(this->matched.at(this->map.at(this->selected)));
 
     QString ret = QString::fromStdString(pl->plugin->realExec(pp->getArgvs().join(" ").toStdString()));
 
@@ -177,10 +232,15 @@ void MainWindow::selectHandler() {
     }
 
     if (status) {
-        ::setuid(1000);
         p.setWorkingDirectory(QDir::currentPath() + "/plugins/" + pl->_name);
-        this->hide();
+        qDebug() << p.workingDirectory();
+
         p.startDetached();
         qDebug() << "Process started";
+        qDebug() << p.state();
+        ui->lineEdit->clear();
+        this->hide();
     }
 }
+
+void MainWindow::showEvent(QCloseEvent* event) { ui->lineEdit->setFocus(); }

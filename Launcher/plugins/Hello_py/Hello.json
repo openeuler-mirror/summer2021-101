@@ -1,11 +1,7 @@
 {
     "name": "Hello_py",
-    "introduction": "a hello world of python",
-    "author": "MarmaladeCat",
-    "version": "1.2.1",
     "keyword": "hel",
-    "icon": "./Hello.png",
-    "path": "./test",
-    "CMDmethod": true,
-    "website": "https://gitlab.summer-ospp.ac.cn/summer2021/210010449"
+    "version": "1.2.3",
+    "cmd": true,
+    "elf.so": "Hello_py.1.2.3.so"
 }

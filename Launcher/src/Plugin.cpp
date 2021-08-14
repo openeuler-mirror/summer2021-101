@@ -5,6 +5,7 @@ Plugin::Plugin(QString name, QString keyword, QString version, bool cmd, bool en
     this->_keyword = keyword;
     this->_version = version;
     this->_enable = enable;
+    this->cmd = cmd;
     this->errCode = 0;
     this->dlfd = NULL;
     this->path = QDir::currentPath() + "/plugins/" + this->_name + "/" + this->_name + "." + this->_version + ".so";
@@ -15,13 +16,13 @@ Plugin::Plugin(QString name, QString keyword, QString version, bool cmd, bool en
 }
 
 Plugin::~Plugin() {
-    if (this->dlfd != NULL) {
-        dlclose(this->dlfd);
-        this->dlfd = NULL;
-    }
     if (this->plugin != NULL) {
         this->dlPluginDestroy(this->plugin);
         this->plugin = NULL;
+    }
+    if (this->dlfd != NULL) {
+        dlclose(this->dlfd);
+        this->dlfd = NULL;
     }
 }
 

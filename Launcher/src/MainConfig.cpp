@@ -1,6 +1,6 @@
 #include "include/MainConfig.h"
 
-MainConfig::MainConfig(QString file) {
+MainConfig::MainConfig(QString file, QVector<Plugin *> &value) : plugins(value) {
     QDir::setCurrent("/home/miao/Documents/github/summer2021-101/Launcher/");
 
     this->status = 0;
@@ -16,6 +16,8 @@ MainConfig::~MainConfig() {
 }
 
 QVector<Plugin *> &MainConfig::getPlugins() { return this->plugins; }
+
+QString MainConfig::getVersion() const { return version; }
 
 void MainConfig::checkConf() {
     this->plugins.clear();
@@ -37,8 +39,8 @@ void MainConfig::checkConf() {
                      << "json error";
             status = ERR_CONF;
         } else {
-            if (obj.value("version").isString()) {
-                this->version = obj.value("version").toString();
+            if (obj.value("Version").isString()) {
+                this->version = obj.value("Version").toString();
             }
             if (!obj.value("Plugins").isArray()) {
                 this->status = ERR_CONF;
@@ -71,4 +73,30 @@ void MainConfig::checkConf() {
         }
     }
     qDebug() << "conf read status:" << this->status;
+}
+
+void MainConfig::reWrite() {
+    QJsonObject obj;
+    obj.insert("Version", this->version);
+    QJsonArray array;
+    qDebug() << this->plugins.count();
+    for (int i = 0; i < this->plugins.count(); ++i) {
+        QJsonObject onePlugin;
+
+        onePlugin.insert("name", this->plugins.at(i)->_name);
+        onePlugin.insert("version", this->plugins.at(i)->_version);
+
+        onePlugin.insert("keyword", this->plugins.at(i)->_keyword);
+        onePlugin.insert("cmd", this->plugins.at(i)->cmd);
+        onePlugin.insert("status", this->plugins.at(i)->_enable);
+        array.append(onePlugin);
+        qDebug() << this->plugins.at(i)->_keyword;
+    }
+
+    obj.insert("Plugins", array);
+    QJsonDocument dom(obj);
+    qDebug() << dom.toJson();
+    this->fd->resize(0);
+    qDebug() << this->fd->write(dom.toJson());
+    qDebug() << this->fd->size();
 }

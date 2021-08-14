@@ -11,17 +11,20 @@
 #include <QDebug>
 #include <QDesktopWidget>
 #include <QHBoxLayout>
+#include <QList>
 #include <QMainWindow>
 #include <QProcess>
 #include <QProcessEnvironment>
 #include <QPushButton>
 #include <QRect>
 #include <QScreen>
+#include <QShowEvent>
 #include <QSocketNotifier>
 
 #include "KBListener.h"
 #include "MainConfig.h"
 #include "Plugin.h"
+#include "PluginManager.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -39,6 +42,9 @@ public slots:
     void inHandler(const QString& text);
     void selectHandler();
 
+protected:
+    void showEvent(QCloseEvent* event);
+
 private:
     Ui::MainWindow* ui;
 
@@ -55,11 +61,14 @@ private:
     QVector<int> matched;
     // 生成所有候选插件面板
     QVector<QWidget*> contents;
+    QList<int> map;
 
     int selected;
+    PluginManager* pluginManager;
 
     void resetWindowSize();
     void setKBListener();
+    void setManagerPage();
     //    void KBListener(qintptr fd);
 };
-#endif // MAINWINDOW_H
+#endif  // MAINWINDOW_H
