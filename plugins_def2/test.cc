@@ -5,7 +5,7 @@ string Test::getinfo()
     return "{    \"name\": \"Hello_py\", \
     \"introduction\": \"a hello world of python\",\
     \"author\": \"MarmaladeCat\",\
-    \"version\": \"1.2.1\",\
+    \"version\": \"1.2.3\",\
     \"keyword\": \"hel\",\
     \"icon\": \"./Hello.png\",\
     \"path\": \"./test\",\
@@ -25,7 +25,14 @@ string Test::preExec(string s)
                 \"1234\"\
             ],\
             \"info\": \"Powered by MarmaladeCat\"\
-        } \
+        },\
+        {\
+            \"cmd\": \"/usr/bin/gedit\",\
+            \"argvs\": [\
+                \"Hello.py\"\
+            ],\
+            \"info\": \"Powered by MarmaladeCat\"\
+        }\
     ]\
 }\
 ";
@@ -38,6 +45,6 @@ string Test::realExec(std::string s)
     // 允许相对路径
 
     return "{\"status\": true,\
-    \"cmd\": \"/usr/bin/python3.8\",\
-    \"argvs\": [\"Hello.py\", \"1234\"]}";
+    \"cmd\": \"/usr/bin/gedit\",\
+    \"argvs\": [\"Hello.py\"]}";
 }
