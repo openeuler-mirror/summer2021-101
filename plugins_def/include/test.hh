@@ -11,6 +11,8 @@ public:
     virtual string preExec(string s);
 
     virtual string realExec(string s);
+
+    virtual void update();
 };
 
 extern "C" BasePlugin* create()

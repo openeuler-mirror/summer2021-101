@@ -3,21 +3,55 @@
 #### 介绍
 https://gitee.com/openeuler-competition/summer-2021/issues/I3OBSG
 
-#### 软件架构
-软件架构说明
-
 
 #### 安装教程
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+1. 下载本软件源码
+
+   1. git clone https://gitee.com/openeuler-competition/summer2021-101.git
+   2. cd summer2021-101
+
+2. 编译准备
+
+   1. 安装Gcc、G++、Qmake工具
+   2. mkdir build-Launcher
+   3. mkdir build-Launcher-emit
+   4. mkdir ~/.Launcher
+   5. mkdir ~/.Launcher/Launcher-emit
+   6. mkdir ~/.Launcher/Launcher
+
+3. 编译主窗体程序
+
+   1. cd build-Launcher
+   2. qmake-qt5 ../Launcher/Launcher.pro
+   3. make
+   4. cp -r Launcher ~/.Launcher/Launcher/
+   5. cp -r  plugins/* ~/.Launcher/Launcher/ 
+   6. 启动本程序即可
+
+4. 编译触发器
+
+   1. cd build-Launcher-emit
+   2. qmake ../Launcher-emit/Launcher-emit.pro
+   3. make
+   4. cp -r Launcher-emit ~/.Launcher/Launcher-emit
+   5. 设置系统快捷键触发这个Launcher-emit程序
+
+5. 安装插件(以time为例)
+
+   1. cd time
+   2. make
+   3. 在插件管理界面中，选择time/test/time.json即可安装该插件
+
+   
+
+
 
 #### 使用说明
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+所有说明均在doc目录中，可以前往查看。
+
+[指路](./doc/overview.md)
 
 #### 参与贡献
 
@@ -27,11 +61,8 @@ https://gitee.com/openeuler-competition/summer-2021/issues/I3OBSG
 4.  新建 Pull Request
 
 
-#### 特技
 
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+#### 致谢
+感谢导师的指导
+感谢Qt社区的优秀Qt框架
+感谢使用到的rapidJson开源项目

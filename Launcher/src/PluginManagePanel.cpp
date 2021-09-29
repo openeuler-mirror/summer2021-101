@@ -4,6 +4,7 @@
 
 PluginManagePanel::PluginManagePanel(Plugin* onePlugin, QWidget* parent)
     : QWidget(parent), ui(new Ui::PluginManagePanel) {
+    setAttribute(Qt::WA_StyledBackground, true);
     ui->setupUi(this);
     this->onePlugin = onePlugin;
     this->path = QDir::currentPath() + "/plugins/" + onePlugin->_name + "/";
@@ -38,6 +39,15 @@ void PluginManagePanel::setupInfo() {
         this->status = ERR_INFO_SYNX;
     } else {
         QJsonObject obj = dom.object();
+        if (obj.contains("config")) {
+            if (obj.value("config").isString()) {
+                if (QFile::exists(obj.value("config").toString())) {
+                    this->ifConfig = true;
+                    this->config = obj.value("config").toString();
+                }
+            }
+        }
+
         if (!obj.contains("name") || !obj.contains("introduction") || !obj.contains("version") ||
             !obj.contains("author") || !obj.contains("keyword") || !obj.contains("icon") || !obj.contains("website") ||
             !obj.contains("CMDmethod")) {
@@ -72,5 +82,13 @@ void PluginManagePanel::setupInfo() {
         ui->onoff->setText("ON");
     else {
         ui->onoff->setText("OFF");
+    }
+    ui->configButton->setEnabled(this->ifConfig);
+    if (this->ifConfig) {
+        QObject::connect(ui->configButton, &QPushButton::clicked, this, [&]() {
+            QProcess p;
+            p.setProgram(this->config);
+            p.startDetached();
+        });
     }
 }

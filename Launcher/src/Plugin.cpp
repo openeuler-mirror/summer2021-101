@@ -8,8 +8,11 @@ Plugin::Plugin(QString name, QString keyword, QString version, bool cmd, bool en
     this->cmd = cmd;
     this->errCode = 0;
     this->dlfd = NULL;
-    this->path = QDir::currentPath() + "/plugins/" + this->_name + "/" + this->_name + "." + this->_version + ".so";
+    this->dlpath = QDir::currentPath() + "/plugins/" + this->_name + "/" + this->_name + "." + this->_version + ".so";
+    this->dlPluginCreate = NULL;
+    this->dlPluginDestroy = NULL;
     checkSo();
+
     if (this->_enable) {
         opendl();
     }
@@ -28,28 +31,27 @@ Plugin::~Plugin() {
 
 void Plugin::checkSo() {
     if (this->_enable) {
-        //        qDebug()<<"one plugin so path:"<<this->path;
-        if (::access(this->path.toLocal8Bit().data(), R_OK)) {
+        if (::access(this->dlpath.toLocal8Bit().data(), R_OK)) {
             this->_enable = false;
             this->errCode = ERR_DL_FOUND;
-            qDebug() << "check so status:" << this->_enable;
         }
     }
 }
 
 void Plugin::opendl() {
-    this->dlfd = dlopen(this->path.toLocal8Bit().data(), RTLD_LAZY);
+    this->dlfd = dlopen(this->dlpath.toLocal8Bit().data(), RTLD_LAZY);
     if (!dlfd) {
         this->_enable = false;
         this->errCode = ERR_DL_OPEN;
-        qDebug() << dlerror();
+        qDebug() << "[Error]: DL Open Error";
         return;
     }
+
     this->dlPluginCreate = (create_t*)dlsym(this->dlfd, "create");
     if (!dlPluginCreate) {
         this->_enable = false;
         this->errCode = ERR_DL_PLUGIN;
-        qDebug() << dlerror();
+        qDebug() << "[Error]: DL Create find Error";
 
         return;
     }
@@ -58,11 +60,10 @@ void Plugin::opendl() {
     if (!dlPluginDestroy) {
         this->_enable = false;
         this->errCode = ERR_DL_CLOSE;
-        qDebug() << dlerror();
+        qDebug() << "[Error]: DL close find Error";
         return;
     }
-
     this->plugin = this->dlPluginCreate();
-    qDebug() << "open one plugin successfully";
-    qDebug() << QString::fromStdString(this->plugin->getinfo());
+
+    qDebug() << "[Info]: Load Plugin " << this->_name << "OK";
 }

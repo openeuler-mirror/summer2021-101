@@ -11,20 +11,27 @@
 #include <QDebug>
 #include <QDesktopWidget>
 #include <QHBoxLayout>
+#include <QKeyEvent>
 #include <QList>
 #include <QMainWindow>
+#include <QMessageBox>
 #include <QProcess>
 #include <QProcessEnvironment>
 #include <QPushButton>
 #include <QRect>
 #include <QScreen>
+#include <QScrollBar>
 #include <QShowEvent>
 #include <QSocketNotifier>
+#include <QtDBus>
 
 #include "KBListener.h"
 #include "MainConfig.h"
 #include "Plugin.h"
 #include "PluginManager.h"
+#include "errnos.h"
+
+#define SERVICE_NAME "org.QtDBus.Launcher"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -43,7 +50,8 @@ public slots:
     void selectHandler();
 
 protected:
-    void showEvent(QCloseEvent* event);
+    virtual void showEvent(QCloseEvent* event);
+    void keyPressEvent(QKeyEvent* event);
 
 private:
     Ui::MainWindow* ui;
@@ -56,11 +64,16 @@ private:
     QVector<Plugin*> plugins;
 
     QVBoxLayout* layout;
+
     QWidget* contentWidget;
+
     // 指向输入匹配到的插件
     QVector<int> matched;
+
     // 生成所有候选插件面板
     QVector<QWidget*> contents;
+
+    // 存放候选面板对应的match的第几个
     QList<int> map;
 
     int selected;

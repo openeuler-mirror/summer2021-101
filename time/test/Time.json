@@ -1,0 +1,7 @@
+{
+    "name": "time",
+    "keyword": "time",
+    "version": "1.2.2",
+    "cmd": false,
+    "elf.so": "time.1.2.2.so"
+}

@@ -1,0 +1,7 @@
+{
+    "name": "fsearch",
+    "keyword": "f",
+    "version": "1.2.6",
+    "cmd": true,
+    "elf.so": "fsearch.1.2.6.so"
+}

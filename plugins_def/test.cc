@@ -1,5 +1,10 @@
 #include "test.hh"
 
+void Test::update()
+{
+    return;
+}
+
 string Test::getinfo()
 {
     return "{    \"name\": \"Hello_py\", \
@@ -22,7 +27,7 @@ string Test::preExec(string s)
             \"cmd\": \"/usr/bin/python3.8\",\
             \"argvs\": [\
                 \"Hello.py\",\
-                \"1234\"\
+                \"Hello World!\"\
             ],\
             \"info\": \"Powered by MarmaladeCat\"\
         } \
@@ -33,11 +38,9 @@ string Test::preExec(string s)
 
 string Test::realExec(std::string s)
 {
-    std::cout << s << std::endl;
-
     // 允许相对路径
 
     return "{\"status\": true,\
     \"cmd\": \"/usr/bin/python3.8\",\
-    \"argvs\": [\"Hello.py\", \"1234\"]}";
+    \"argvs\": [\"Hello.py\", \"Hello World!\"]}";
 }

@@ -3,26 +3,37 @@
 #include "ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
+    setAttribute(Qt::WA_StyledBackground, true);
     ui->setupUi(this);
+    QDir::setCurrent(QDir::homePath() + "/.Launcher/Launcher");
+
+    qDebug() << "[Info]: Working folder:" << QDir::currentPath();
 
     resetWindowSize();
     setKBListener();
     this->pluginManager = NULL;
 
-    this->conf = new MainConfig("/home/miao/Documents/github/summer2021-101/Launcher/conf.json", plugins);
-    //    this->plugins = this->conf->getPlugins();
+    this->conf = new MainConfig("conf.json", plugins);
+    if (this->conf->getStatus() != 0) {
+        qDebug() << "[Error]: Main config read error with status " << this->conf->getStatus();
 
-    this->contentWidget = new QWidget();
-    this->layout = new QVBoxLayout();
-    ui->scrollArea->setWidget(this->contentWidget);
-    this->layout->setAlignment(Qt::AlignTop);
-    this->contentWidget->resize(1024, 1024);
-    this->contentWidget->setLayout(this->layout);
+        exit(0);
+        //        QMessageBox::critical(nullptr, "Error", "Config Error");
 
-    QObject::connect(ui->lineEdit, &QLineEdit::textChanged, this, &MainWindow::inHandler);
-    QObject::connect(ui->lineEdit, &QLineEdit::returnPressed, this, &MainWindow::selectHandler);
-    QObject::connect(ui->pushButton, &QPushButton::clicked, this, &MainWindow::setManagerPage);
-    this->selected = 0;
+    } else {
+        qDebug() << "[Info]: Main config read OK!";
+        this->contentWidget = new QWidget();
+        this->layout = new QVBoxLayout();
+        ui->scrollArea->setWidget(this->contentWidget);
+        this->layout->setAlignment(Qt::AlignTop);
+        this->contentWidget->resize(1024, 1024);
+        this->contentWidget->setLayout(this->layout);
+
+        QObject::connect(ui->lineEdit, &QLineEdit::textChanged, this, &MainWindow::inHandler);
+        QObject::connect(ui->lineEdit, &QLineEdit::returnPressed, this, &MainWindow::selectHandler);
+        QObject::connect(ui->pushButton, &QPushButton::clicked, this, &MainWindow::setManagerPage);
+        this->selected = 0;
+    }
 }
 
 MainWindow::~MainWindow() {
@@ -36,44 +47,28 @@ void MainWindow::resetWindowSize() {
     this->setGeometry(size);
     int width = size.width() / 4;
     int height = size.height() / 4;
-    qDebug() << "Window size:widht" << size.width() << "height" << size.height();
     ui->horizontalSpacer->changeSize(width, 0);
     ui->horizontalSpacer_2->changeSize(width, 0);
-    //    ui->verticalSpacer->changeSize(0, height);
 }
 
 void MainWindow::setKBListener() {
     this->kbListener = new KBListener();
-
-    QObject::connect(this->kbListener, &KBListener::KEY_Esc, this, [&]() {
-        ui->lineEdit->clear();
-        this->hide();
-
-        //        this->close();
-        this->kbListener->onScreen = false;
-    });
     QObject::connect(this->kbListener, &KBListener::KEY_Show, this, [&]() {
         this->show();
-        this->kbListener->onScreen = true;
+        this->setWindowState(Qt::WindowActive);
+        this->setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
+        ui->lineEdit->setFocus();
     });
+    if (!QDBusConnection::sessionBus().isConnected()) {
+        qDebug() << "[Error]: Connect to DBus error:" << QDBusConnection::sessionBus().lastError().message();
+        this->close();
+    }
 
-    QObject::connect(this->kbListener, &KBListener::KEY_Up, this, [&]() {
-        if (this->contents.isEmpty()) {
-            return;
-        }
-        ((PluginPanel*)(this->contents.at(this->selected)))->selected(false);
-        this->selected = (this->selected + this->map.count() - 1) % this->map.count();
-        ((PluginPanel*)(this->contents.at(this->selected)))->selected(true);
-    });
-
-    QObject::connect(this->kbListener, &KBListener::KEY_Down, this, [&]() {
-        if (this->contents.isEmpty()) {
-            return;
-        }
-        ((PluginPanel*)(this->contents.at(this->selected)))->selected(false);
-        this->selected = (this->selected + this->map.count() + 1) % this->map.count();
-        ((PluginPanel*)(this->contents.at(this->selected)))->selected(true);
-    });
+    if (!QDBusConnection::sessionBus().registerService(SERVICE_NAME)) {
+        qDebug() << "[Error]: Rigister DBus service error:" << QDBusConnection::sessionBus().lastError().message();
+        this->close();
+    }
+    QDBusConnection::sessionBus().registerObject("/", this->kbListener, QDBusConnection::ExportAllSlots);
 }
 
 void MainWindow::setManagerPage() {
@@ -82,11 +77,13 @@ void MainWindow::setManagerPage() {
     this->pluginManager = new PluginManager(this->plugins, this);
     this->pluginManager->show();
     QObject::connect(this->pluginManager, &PluginManager::changed, this->conf, &MainConfig::reWrite);
-    qDebug() << "[Info] PluginManager: open";
+
+    //    for (int i = 0; i < this->plugins.size(); ++i) {
+    //        this->plugins.at(i)->plugin->update();
+    //    }
 }
 
 void MainWindow::inHandler(const QString& text) {
-    qDebug() << text;
     QStringList inList = text.split(" ");
     for (int i = 0; i < this->layout->count(); ++i) {
         this->layout->removeItem(this->layout->itemAt(0));
@@ -97,24 +94,24 @@ void MainWindow::inHandler(const QString& text) {
         this->contents.at(i)->deleteLater();
     }
     this->contents.clear();
-
     this->matched.clear();
-
     this->map.clear();
 
     for (int i = 0; i < this->plugins.count(); ++i) {
-        if (inList.at(i).compare(this->plugins.at(i)->_keyword) == 0) {
+        if (inList.at(0).compare(this->plugins.at(i)->_keyword) == 0) {
             this->matched.push_back(i);
         }
     }
+
+    inList.removeAt(0);
+    QString oneSearch = inList.join(" ");
 
     QJsonDocument dom;
     QJsonParseError jsErr;
 
     for (int i = 0; i < this->matched.count(); ++i) {
         QString query =
-            QString::fromStdString(this->plugins.at(this->matched.at(i))->plugin->preExec(text.toStdString()));
-        qDebug() << query;
+            QString::fromStdString(this->plugins.at(this->matched.at(i))->plugin->preExec(oneSearch.toStdString()));
         dom = QJsonDocument::fromJson(query.toLocal8Bit(), &jsErr);
         if (dom.isNull() || jsErr.error != QJsonParseError::NoError || !dom.isObject()) {
             continue;
@@ -145,12 +142,15 @@ void MainWindow::inHandler(const QString& text) {
                                     }
 
                                     PluginPanel* pp = new PluginPanel(
-                                        QDir::currentPath() + "/plugins/" + this->plugins.at(i)->_name,
+                                        QDir::currentPath() + "/plugins/" +
+                                            this->plugins.at(this->matched.at(i))->_name,
                                         this->plugins.at(i)->_name, icon, objPanel.value("cmd").toString(), args,
                                         objPanel.value("info").toString(), this->map.count());
                                     this->map.push_back(i);
-                                    qDebug() << obj.value("icon").toString() << obj.value("cmd").toString() << args
-                                             << obj.value("info").toString();
+                                    //                                    qDebug() << "[Info]: Generate one Panel:" <<
+                                    //                                    obj.value("icon").toString()
+                                    //                                             << obj.value("cmd").toString() <<
+                                    //                                             args << obj.value("info").toString();
                                     this->contents.push_back(pp);
                                 }
                             }
@@ -169,7 +169,6 @@ void MainWindow::inHandler(const QString& text) {
     if (!this->contents.isEmpty()) {
         ((PluginPanel*)(this->contents.at(this->selected)))->selected(true);
     }
-    qDebug() << "map:" << this->map;
 }
 
 void MainWindow::selectHandler() {
@@ -194,23 +193,21 @@ void MainWindow::selectHandler() {
     if (pl->cmd) {
         dom = QJsonDocument::fromJson(ret.toLocal8Bit(), &jsErr);
         if (dom.isNull() || jsErr.error != QJsonParseError::NoError || !dom.isObject()) {
-            qDebug() << "Error parse realExec";
+            qDebug() << "[Info]: RealExec Parse failed";
         } else {
             QJsonObject obj = dom.object();
             if (!obj.contains("status") || !obj.contains("cmd") || !obj.contains("argvs")) {
-                qDebug() << "readexec ret error";
+                qDebug() << "[Info]: RealExec Syntax Error";
             } else {
                 if (!obj.value("status").isBool() || !obj.value("cmd").isString() || !obj.value("argvs").isArray()) {
-                    qDebug() << "readexec ret error";
+                    qDebug() << "[Info]: RealExec Syntax Error";
                 } else {
                     if (obj.value("status").toBool()) {
                         QString cmd = obj.value("cmd").toString();
                         if (!QDir::isAbsolutePath(cmd)) {
-                            cmd = QDir::currentPath() + "/plugins/" + pl->_name + "/" + cmd;
+                            cmd = QDir::currentPath() + "/plugins/" + pl->_name + "/res/" + cmd;
                         }
-
                         p.setProgram(cmd);
-                        qDebug() << "dir " << QDir::currentPath() + "/plugins/" + pl->_name;
                         //                        QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
                         //                        env.insert("PLUGINDIR",
                         //                                   QDir::currentPath() + "/plugins/" + pl->_name);  // Add an
@@ -221,26 +218,62 @@ void MainWindow::selectHandler() {
                         for (int j = 0; j < argvs.count(); ++j) {
                             args << argvs.at(j).toString();
                         }
-
-                        qDebug() << "cmd:" << cmd << "args" << args;
                         p.setArguments(args);
                         status = true;
                     }
                 }
             }
+
+            if (status) {
+                p.setWorkingDirectory(QDir::currentPath() + "/plugins/" + pl->_name);
+                p.startDetached();
+                ui->lineEdit->clear();
+                this->hide();
+            }
         }
-    }
-
-    if (status) {
-        p.setWorkingDirectory(QDir::currentPath() + "/plugins/" + pl->_name);
-        qDebug() << p.workingDirectory();
-
-        p.startDetached();
-        qDebug() << "Process started";
-        qDebug() << p.state();
+    } else {
         ui->lineEdit->clear();
         this->hide();
     }
 }
 
 void MainWindow::showEvent(QCloseEvent* event) { ui->lineEdit->setFocus(); }
+
+void MainWindow::keyPressEvent(QKeyEvent* event) {
+    switch (event->key()) {
+    case Qt::Key_Escape:
+        ui->lineEdit->clear();
+        //        this->hide();
+
+        this->close();
+
+        break;
+
+    case Qt::Key_Up:
+        if (this->contents.isEmpty()) {
+            return;
+        }
+        ((PluginPanel*)(this->contents.at(this->selected)))->selected(false);
+        this->selected = (this->selected + this->map.count() - 1) % this->map.count();
+        ((PluginPanel*)(this->contents.at(this->selected)))->selected(true);
+
+        ui->scrollArea->verticalScrollBar()->setValue((this->selected) * 1048 / this->contents.length());
+
+        break;
+
+    case Qt::Key_Down:
+        if (this->contents.isEmpty()) {
+            return;
+        }
+        ((PluginPanel*)(this->contents.at(this->selected)))->selected(false);
+        this->selected = (this->selected + this->map.count() + 1) % this->map.count();
+        ((PluginPanel*)(this->contents.at(this->selected)))->selected(true);
+
+        ui->scrollArea->verticalScrollBar()->setValue((this->selected) * 1048 / this->contents.length());
+
+        break;
+
+    default:
+        QWidget::keyPressEvent(event);
+    }
+}

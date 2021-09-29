@@ -1,6 +1,7 @@
 #include <QApplication>
 #include <QDebug>
 #include <QDir>
+#include <QFile>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QPalette>
@@ -15,12 +16,14 @@ int main(int argc, char *argv[]) {
     //    ::daemon(1, 0);
 
     QApplication a(argc, argv);
-    MainWindow w;
-    QPalette pal = QPalette();
-    pal.setColor(QPalette::Background, QColor(0xA9, 0xA9, 0xA9, 0x50));
-    w.setPalette(pal);
-    //    w.setWindowFlag(Qt::FramelessWindowHint);
 
+    QFile styleFile(":a.qss");
+    if (styleFile.open(QIODevice::ReadOnly)) {
+        a.setStyleSheet(styleFile.readAll());
+        styleFile.close();
+    }
+
+    MainWindow w;
     w.show();
 
     return a.exec();

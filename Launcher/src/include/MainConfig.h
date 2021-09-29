@@ -24,9 +24,11 @@ public:
     MainConfig(QString file, QVector<Plugin*>& value);
     ~MainConfig();
 
-    QVector<Plugin*>& getPlugins();
+    //    QVector<Plugin*>& getPlugins();
 
     QString getVersion() const;
+
+    int getStatus() const;
 
 public slots:
     void reWrite();

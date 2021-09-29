@@ -1,3 +1,5 @@
+//  接收DBus传来的快捷键消息
+
 #ifndef KBLISTENER_H
 #define KBLISTENER_H
 
@@ -14,28 +16,17 @@
 class KBListener : public QObject {
     Q_OBJECT
 public:
-    int status;
-    explicit KBListener(QObject* parent = nullptr);
+    KBListener(QObject* parent = NULL);
     ~KBListener();
-    bool onScreen;
+
+public slots:
+    Q_SCRIPTABLE QString emitShow();
 
 signals:
-    void KEY_Esc();
+
     void KEY_Show();
-    void KEY_Close();
-    //    void KEY_Hide();
-    void KEY_Up();
-    void KEY_Down();
 
 private:
-    int kb;
-
-    bool kbCtrl;
-    bool kbP;
-
-    QSocketNotifier* kbNotifer;
-    struct input_event kbEvent;
-    void onKeyPressed(qintptr fd);
 };
 
 #endif  // KBLISTENER_H

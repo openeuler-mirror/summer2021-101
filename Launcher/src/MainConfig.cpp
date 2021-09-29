@@ -1,8 +1,6 @@
 #include "include/MainConfig.h"
 
 MainConfig::MainConfig(QString file, QVector<Plugin *> &value) : plugins(value) {
-    QDir::setCurrent("/home/miao/Documents/github/summer2021-101/Launcher/");
-
     this->status = 0;
     this->fd = new QFile(file);
     checkConf();
@@ -15,13 +13,17 @@ MainConfig::~MainConfig() {
     }
 }
 
-QVector<Plugin *> &MainConfig::getPlugins() { return this->plugins; }
+// QVector<Plugin *> &MainConfig::getPlugins() { return this->plugins; }
 
 QString MainConfig::getVersion() const { return version; }
 
 void MainConfig::checkConf() {
     this->plugins.clear();
-    this->fd->open(QIODevice::ReadWrite);
+    if (!this->fd->open(QIODevice::ReadWrite)) {
+        qDebug() << "[Error]: Conf Read Error" << this->fd->errorString();
+        status = ERR_CONF;
+        return;
+    }
 
     QByteArray rawData = this->fd->readAll();
     QJsonParseError jsErr;
@@ -30,7 +32,7 @@ void MainConfig::checkConf() {
     QJsonArray conf;
 
     if (document.isNull() || jsErr.error != QJsonParseError::NoError || !document.isObject()) {
-        qDebug() << "[CONF] ERROR:" << jsErr.error << jsErr.errorString();
+        qDebug() << "[Error]: Conf Syntax Error" << jsErr.errorString();
         status = ERR_CONF;
     } else {
         obj = document.object();
@@ -41,7 +43,10 @@ void MainConfig::checkConf() {
         } else {
             if (obj.value("Version").isString()) {
                 this->version = obj.value("Version").toString();
+            } else {
+                this->status = ERR_CONF;
             }
+
             if (!obj.value("Plugins").isArray()) {
                 this->status = ERR_CONF;
             } else {
@@ -52,13 +57,14 @@ void MainConfig::checkConf() {
                         QJsonObject onePlu = conf.at(i).toObject();
                         if (!onePlu.contains("name") || !onePlu.contains("keyword") || !onePlu.contains("version") ||
                             !onePlu.contains("cmd") || !onePlu.contains("status")) {
-                            this->status = ERR_CONF;
+                            continue;
 
                         } else {
                             if (!onePlu.value("name").isString() || !onePlu.value("keyword").isString() ||
                                 !onePlu.value("version").isString() || !onePlu.value("cmd").isBool() ||
                                 !onePlu.value("status").isBool()) {
-                                this->status = ERR_CONF;
+                                continue;
+
                             } else {
                                 Plugin *onePlugin =
                                     new Plugin(onePlu.value("name").toString(), onePlu.value("keyword").toString(),
@@ -72,7 +78,7 @@ void MainConfig::checkConf() {
             }
         }
     }
-    qDebug() << "conf read status:" << this->status;
+    qDebug() << "[Info]: Check Config status:" << this->status;
 }
 
 void MainConfig::reWrite() {
@@ -90,13 +96,16 @@ void MainConfig::reWrite() {
         onePlugin.insert("cmd", this->plugins.at(i)->cmd);
         onePlugin.insert("status", this->plugins.at(i)->_enable);
         array.append(onePlugin);
-        qDebug() << this->plugins.at(i)->_keyword;
     }
 
     obj.insert("Plugins", array);
     QJsonDocument dom(obj);
-    qDebug() << dom.toJson();
+
     this->fd->resize(0);
-    qDebug() << this->fd->write(dom.toJson());
-    qDebug() << this->fd->size();
+    this->fd->write(dom.toJson());
+    this->fd->flush();
+
+    qDebug() << "[Info]: Config Rewrite OK";
 }
+
+int MainConfig::getStatus() const { return status; }

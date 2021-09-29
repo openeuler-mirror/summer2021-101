@@ -25,7 +25,7 @@ public:
     bool cmd;
     bool _enable;
 
-    QString path;
+    QString dlpath;
     void* dlfd;
     BasePlugin* plugin;
     int errCode;

@@ -28,6 +28,9 @@ private:
     Plugin *onePlugin;
     QString path;
 
+    bool ifConfig = false;
+    QString config;
+
     void setupInfo();
 };
 

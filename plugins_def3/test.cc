@@ -2,10 +2,10 @@
 
 string Test::getinfo()
 {
-    return "{    \"name\": \"Hello_py\", \
+    return "{    \"name\": \"Hello\", \
     \"introduction\": \"a hello world of python\",\
     \"author\": \"MarmaladeCat\",\
-    \"version\": \"1.2.3\",\
+    \"version\": \"1.2.5\",\
     \"keyword\": \"hel\",\
     \"icon\": \"./Hello.png\",\
     \"path\": \"./test\",\
@@ -40,11 +40,9 @@ string Test::preExec(string s)
 
 string Test::realExec(std::string s)
 {
-    std::cout << s << std::endl;
-
     // 允许相对路径
 
     return "{\"status\": true,\
     \"cmd\": \"/usr/bin/gedit\",\
-    \"argvs\": [\"Hello.py\"]}";
+    \"argvs\": [\"Hello.py\", \"1234\"]}";
 }

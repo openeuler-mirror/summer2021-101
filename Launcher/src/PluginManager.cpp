@@ -4,6 +4,7 @@
 
 PluginManager::PluginManager(QVector<Plugin *> &value, QWidget *parent)
     : QMainWindow(parent), ui(new Ui::PluginManager), plugins(value) {
+    setAttribute(Qt::WA_StyledBackground, true);
     ui->setupUi(this);
 
     this->contentWidget = new QWidget();
@@ -87,8 +88,12 @@ void PluginManager::addNewPlugin() {
             } else {
                 qDebug() << "error when add new plugin";
             }
+            qDebug() << obj.value("name").toString() << obj.value("keyword").toString()
+                     << obj.value("version").toString() << obj.value("cmd").toBool();
+
             Plugin *newPlugin = new Plugin(obj.value("name").toString(), obj.value("keyword").toString(),
                                            obj.value("version").toString(), obj.value("cmd").toBool(), true);
+
             qDebug() << newPlugin->errCode;
             this->plugins.push_back(newPlugin);
         }
@@ -117,7 +122,7 @@ bool PluginManager::cp_r(QString src, QString dst) {
         if (info.fileName() == "." || info.fileName() == "..") {
             continue;
         }
-        if (info.isDir()) {
+        if (info.isDir() && !info.isSymLink()) {
             // 创建文件夹，递归调用该函数
             cp_r(info.filePath(), dst + "/" + info.fileName());
             continue;

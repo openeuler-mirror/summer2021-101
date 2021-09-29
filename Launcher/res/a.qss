@@ -1,0 +1,22 @@
+QPushButton#pushButton{
+    background-color:rgba(0,0,0,0);
+    image: url(:settings.png);
+}
+
+.PluginManagePanel
+{    
+    border:2px solid #818181;    
+    border-radius: 8px;
+
+}
+
+.PluginPanel
+{    
+    border:2px solid #818181;
+    border-radius: 8px;
+}
+
+.MainWindow{
+    background:rgba(223,223,223,0.2);
+
+}
