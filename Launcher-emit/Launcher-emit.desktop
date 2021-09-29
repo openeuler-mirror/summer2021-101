@@ -1,0 +1,11 @@
+[Desktop Entry]                                 
+
+Name=Launcher-emit
+
+Comment=Launcher-emit of Launcher
+
+Exec=/home/miao/.Launcher/Launcher-emit/Launcher-emit               #程序的启动命令，可以带参数运行
+
+Terminal=false
+
+Type=Application
