@@ -4,7 +4,7 @@
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
-    QDir::setCurrent("/home/miao/Documents/github/summer2021-101/Launcher/");
+    QDir::setCurrent("/home/miao/.Launcher/Launcher/");
 
     fp.setFileName(QDir::currentPath() + "/plugins/fsearch/dirs/searchDirs.txt");
 

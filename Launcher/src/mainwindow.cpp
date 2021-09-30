@@ -243,9 +243,9 @@ void MainWindow::keyPressEvent(QKeyEvent* event) {
     switch (event->key()) {
     case Qt::Key_Escape:
         ui->lineEdit->clear();
-        //        this->hide();
+        this->hide();
 
-        this->close();
+        //        this->close();
 
         break;
 

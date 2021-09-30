@@ -33,6 +33,7 @@ void PluginManagePanel::setupInfo() {
         this->status = ERR_INFO;
         return;
     }
+    // qDebug() << QString::fromStdString(this->onePlugin->plugin->getinfo());
     dom = QJsonDocument::fromJson(this->onePlugin->plugin->getinfo().c_str(), &jsErr);
     if (dom.isNull() || jsErr.error != QJsonParseError::NoError || !dom.isObject()) {
         qDebug() << "Error parse getinfo";

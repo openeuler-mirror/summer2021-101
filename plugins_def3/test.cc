@@ -1,11 +1,16 @@
 #include "test.hh"
 
+void Test::update()
+{
+    return;
+}
+
 string Test::getinfo()
 {
     return "{    \"name\": \"Hello\", \
     \"introduction\": \"a hello world of python\",\
     \"author\": \"MarmaladeCat\",\
-    \"version\": \"1.2.5\",\
+    \"version\": \"1.2.3\",\
     \"keyword\": \"hel\",\
     \"icon\": \"./Hello.png\",\
     \"path\": \"./test\",\
