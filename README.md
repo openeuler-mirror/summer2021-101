@@ -53,6 +53,8 @@ https://gitee.com/openeuler-competition/summer-2021/issues/I3OBSG
 
 [指路](./doc/overview.md)
 
+文档很齐全，从系统顶层设计，到插件二次开发方法，到其中可能遇到的关键技术问题都有涉及，按需仔细阅读。
+
 #### 参与贡献
 
 1.  Fork 本仓库
