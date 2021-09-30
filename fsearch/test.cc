@@ -26,7 +26,7 @@ string Test::getinfo()
     \"icon\": \"./File.png\",\
     \"path\": \"./test\",\
     \"CMDmethod\": true,\
-    \"config\": \"/home/miao/Documents/github/summer2021-101/build-fsearchConfig-Desktop_Qt_5_14_2_GCC_64bit-Debug/fsearchConfig\",\
+    \"config\": \"./plugins/fsearch/fsearchConfig\",\
     \"website\" : \"https://gitlab.summer-ospp.ac.cn/summer2021/210010449\"}";
 }
 
